@@ -10,6 +10,9 @@ $ cmake ..
 $ make run
 ```
 
+### Result
+The program will generate result `out.bmp` in the `build` folder.
+
 ### Problem Formulation
 - Implement a Gaussian Filter using SystemC module.
 - Connect the testbench and Guassian Filter module using FIFO channels.
@@ -117,6 +120,9 @@ $ mkdir build && cd build
 $ cmake ..
 $ make run
 ```
+
+### Result
+The program will generate result `out.bmp` in the `build` folder.
 
 ### Problem Formulation
 - Implement a Gaussian Filter using SystemC module, incorporating an additional buffer. 
