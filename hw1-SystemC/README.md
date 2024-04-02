@@ -276,6 +276,6 @@ void Testbench::do_guassian() {
 ## Discussion
 
 ### Compare the number of pixel transfer of between the original implementation and the one with buffers
-- Part1 (without buffer) : To calculate each output pixel, it requires $5 \times 5 + 1$ data transfer. Considering there are $256 \times 256$ pixels in the case, it requires $256 \times 256 \times (5 \times 5 + 1)$ data tansfers.
-- Part2 (with buffer) : To calculatethe first pixel of a row, it requires $5 \times 5 + 1$ data transfer. The remaining pixels require only $5 + 1$ data transfer. Given there are 256 rows and 256 columns, it requires $256 \times (5 \times 5 + 1) + 256 \times 255 \times (5 + 1)$ data tensfers.
-- The amount of data transfer for Part1 is $\dfrac{256 \times 256 \times (5 \times 5 + 1)}{256 \times (5 \times 5 + 1) + 256 \times 255 \times (5 + 1)} = 4.28$ times greater than Part2.
+- Part1 (without buffer) : To calculate each output pixel, it requires $5 \times 5 \times 3 + 1$ data transfer. Considering there are $256 \times 256$ pixels in the case, it requires $256 \times 256 \times (5 \times 5 \times 3 + 1)$ data tansfers.
+- Part2 (with buffer) : To calculatethe first pixel of a row, it requires $5 \times 5 \times 3 + 1$ data transfer. The remaining pixels require only $5 + 1$ data transfer. Given there are 256 rows and 256 columns, it requires $256 \times (5 \times 5 \times 3 + 1) + 256 \times 255 \times (5 \times 3 + 1)$ data tensfers.
+- The amount of data transfer for Part1 is $\dfrac{256 \times 256 \times (5 \times 5 \times 3 + 1)}{256 \times (5 \times 5 \times 3 + 1) + 256 \times 255 \times (5 \times 3 + 1)} = 4.68$ times greater than Part2.
