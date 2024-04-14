@@ -129,13 +129,13 @@ void Testbench::do_gaussian() {
   //wait(5 * CLOCK_PERIOD, SC_NS);
   for (y = 0; y != height; ++y) {
     for (x = 0; x != width; ++x) {
-      adjustX = (MASK_X % 2) ? 1 : 0; // 1
-      adjustY = (MASK_Y % 2) ? 1 : 0; // 1
-      xBound = MASK_X / 2;            // 1
-      yBound = MASK_Y / 2;            // 1
+      adjustX = (MASK_X % 2) ? 1 : 0;
+      adjustY = (MASK_Y % 2) ? 1 : 0;
+      xBound = MASK_X / 2;
+      yBound = MASK_Y / 2;
 
-      for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
-        for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
+      for (v = -yBound; v != yBound + adjustY; ++v) {
+        for (u = -xBound; u != xBound + adjustX; ++u) {
           if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
             R = *(source_bitmap +
                   bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
@@ -173,17 +173,9 @@ void Testbench::do_gaussian() {
       //debug
       //cout << "Now at " << sc_time_stamp() << endl; //print current sc_time
 
-      if (total - THRESHOLD >= 0) {
-        // black
-        *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = BLACK;
-        *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = BLACK;
-        *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = BLACK;
-      } else {
-        // white
-        *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = WHITE;
-        *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = WHITE;
-        *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = WHITE;
-      }
+      *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
+      *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
+      *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = total;
     }
   }
   sc_stop();

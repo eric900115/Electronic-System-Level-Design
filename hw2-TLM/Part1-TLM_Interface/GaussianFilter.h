@@ -23,7 +23,7 @@ public:
 
 private:
   void do_filter();
-  int val[MASK_N];
+  int val;
 
   unsigned int base_offset;
   void blocking_transport(tlm::tlm_generic_payload &payload,
