@@ -1,21 +1,21 @@
 #include <cmath>
 #include <iomanip>
 
-#include "SobelFilter.h"
+#include "GaussianFilter.h"
 
-SobelFilter::SobelFilter(sc_module_name n)
+GaussianFilter::GaussianFilter(sc_module_name n)
     : sc_module(n), t_skt("t_skt"), base_offset(0) {
   SC_THREAD(do_filter);
 
-  t_skt.register_b_transport(this, &SobelFilter::blocking_transport);
+  t_skt.register_b_transport(this, &GaussianFilter::blocking_transport);
 }
 
-// sobel mask
+// gaussian mask
 const int mask[MASK_N][MASK_X][MASK_Y] = {{{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}},
 
                                           {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}}};
 
-void SobelFilter::do_filter() {
+void GaussianFilter::do_filter() {
   while (true) {
     for (unsigned int i = 0; i < MASK_N; ++i) {
       val[i] = 0;
@@ -38,7 +38,7 @@ void SobelFilter::do_filter() {
   }
 }
 
-void SobelFilter::blocking_transport(tlm::tlm_generic_payload &payload,
+void GaussianFilter::blocking_transport(tlm::tlm_generic_payload &payload,
                                      sc_core::sc_time &delay) {
   sc_dt::uint64 addr = payload.get_address();
   addr = addr - base_offset;
@@ -48,14 +48,14 @@ void SobelFilter::blocking_transport(tlm::tlm_generic_payload &payload,
   switch (payload.get_command()) {
   case tlm::TLM_READ_COMMAND:
     switch (addr) {
-    case SOBEL_FILTER_RESULT_ADDR:
+    case GAUSSIAN_FILTER_RESULT_ADDR:
       buffer.uint = o_result.read();
       break;
-    case SOBEL_FILTER_CHECK_ADDR:
+    case GAUSSIAN_FILTER_CHECK_ADDR:
       buffer.uint = o_result.num_available();
       break;
     default:
-      std::cerr << "Error! SobelFilter::blocking_transport: address 0x"
+      std::cerr << "Error! GaussianFilter::blocking_transport: address 0x"
                 << std::setfill('0') << std::setw(8) << std::hex << addr
                 << std::dec << " is not valid" << std::endl;
       break;
@@ -68,7 +68,7 @@ void SobelFilter::blocking_transport(tlm::tlm_generic_payload &payload,
 
   case tlm::TLM_WRITE_COMMAND:
     switch (addr) {
-    case SOBEL_FILTER_R_ADDR:
+    case GAUSSIAN_FILTER_R_ADDR:
       if (mask_ptr[0] == 0xff) {
         i_r.write(data_ptr[0]);
       }
@@ -80,7 +80,7 @@ void SobelFilter::blocking_transport(tlm::tlm_generic_payload &payload,
       }
       break;
     default:
-      std::cerr << "Error! SobelFilter::blocking_transport: address 0x"
+      std::cerr << "Error! GaussianFilter::blocking_transport: address 0x"
                 << std::setfill('0') << std::setw(8) << std::hex << addr
                 << std::dec << " is not valid" << std::endl;
       break;

@@ -27,7 +27,7 @@ unsigned char header[54] = {
 
 Testbench::Testbench(sc_module_name n)
     : sc_module(n), initiator("initiator"), output_rgb_raw_data_offset(54) {
-  SC_THREAD(do_sobel);
+  SC_THREAD(do_gaussian);
 }
 
 int Testbench::read_bmp(string infile_name) {
@@ -118,7 +118,7 @@ int Testbench::write_bmp(string outfile_name) {
   return 0;
 }
 
-void Testbench::do_sobel() {
+void Testbench::do_gaussian() {
   int x, y, v, u;        // for loop counter
   unsigned char R, G, B; // color of R, G, B
   int adjustX, adjustY, xBound, yBound;
@@ -155,7 +155,7 @@ void Testbench::do_sobel() {
           mask[1] = 0xff;
           mask[2] = 0xff;
           mask[3] = 0;
-          initiator.write_to_socket(SOBEL_FILTER_R_ADDR, mask, data.uc, 4);
+          initiator.write_to_socket(GAUSSIAN_FILTER_R_ADDR, mask, data.uc, 4);
           wait(1 * CLOCK_PERIOD, SC_NS);
         }
       }
@@ -163,12 +163,12 @@ void Testbench::do_sobel() {
       bool done=false;
       int output_num=0;
       while(!done){
-        initiator.read_from_socket(SOBEL_FILTER_CHECK_ADDR, mask, data.uc, 4);
+        initiator.read_from_socket(GAUSSIAN_FILTER_CHECK_ADDR, mask, data.uc, 4);
         output_num = data.sint;
         if(output_num>0) done=true;
       }
       wait(10 * CLOCK_PERIOD, SC_NS);
-      initiator.read_from_socket(SOBEL_FILTER_RESULT_ADDR, mask, data.uc, 4);
+      initiator.read_from_socket(GAUSSIAN_FILTER_RESULT_ADDR, mask, data.uc, 4);
       total = data.sint;
       //debug
       //cout << "Now at " << sc_time_stamp() << endl; //print current sc_time
