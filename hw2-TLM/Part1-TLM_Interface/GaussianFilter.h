@@ -15,6 +15,7 @@ public:
   sc_fifo<unsigned char> i_r;
   sc_fifo<unsigned char> i_g;
   sc_fifo<unsigned char> i_b;
+  sc_fifo<int> i_row_start;
   sc_fifo<int> o_result;
 
   SC_HAS_PROCESS(GaussianFilter);

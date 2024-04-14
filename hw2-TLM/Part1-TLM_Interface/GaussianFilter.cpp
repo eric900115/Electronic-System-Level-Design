@@ -21,14 +21,35 @@ const double mask[MASK_X][MASK_Y] = {
 
 void GaussianFilter::do_filter() {
 
+  unsigned char buffer[5][5];
+
   while (true) {
 
     val = 0;
 
-    for (unsigned int v = 0; v < MASK_Y; ++v) {
-      for (unsigned int u = 0; u < MASK_X; ++u) {
-        unsigned char grey = round((i_r.read() * 0.299 + i_g.read() * 0.587 + i_b.read() * 0.114));
-        val += (double)grey * mask[v][u];
+    int is_row_start = i_row_start.read();
+    if(is_row_start) {
+      for (unsigned int v = 0; v < MASK_Y; ++v) {
+        for (unsigned int u = 0; u < MASK_X; ++u) {
+          unsigned char grey = round((i_r.read() * 0.299 + i_g.read() * 0.587 + i_b.read() * 0.114));
+          buffer[v][u] = grey;
+          val += (double)grey * mask[v][u];
+        }
+      }
+    }
+    else {
+      for (unsigned int v = 0; v < MASK_Y; ++v) {
+        for (unsigned int u = 0; u < MASK_X; ++u) {
+          if(u != (MASK_X - 1)) {
+            buffer[v][u] = buffer[v][u + 1]; // emulate shift register
+            val += (double)buffer[v][u] * mask[v][u];
+          }
+          else {
+            unsigned char grey = round((i_r.read() * 0.299 + i_g.read() * 0.587 + i_b.read() * 0.114));
+            buffer[v][u] = grey;
+            val += (double)grey * mask[v][u];
+          }
+        }
       }
     }
 
@@ -78,6 +99,9 @@ void GaussianFilter::blocking_transport(tlm::tlm_generic_payload &payload,
       }
       if (mask_ptr[2] == 0xff) {
         i_b.write(data_ptr[2]);
+      }
+      if (mask_ptr[3] == 0xff) {
+        i_row_start.write(data_ptr[3]);
       }
       break;
     default:
