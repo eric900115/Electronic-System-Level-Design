@@ -86,6 +86,7 @@ void GaussianFilter::blocking_transport(tlm::tlm_generic_payload &payload,
     data_ptr[1] = buffer.uc[1];
     data_ptr[2] = buffer.uc[2];
     data_ptr[3] = buffer.uc[3];
+    delay = sc_time(5, SC_NS);
     break;
 
   case tlm::TLM_WRITE_COMMAND:
@@ -103,7 +104,9 @@ void GaussianFilter::blocking_transport(tlm::tlm_generic_payload &payload,
       if (mask_ptr[3] == 0xff) {
         i_row_start.write(data_ptr[3]);
       }
+      delay = sc_time(10, SC_NS);
       break;
+
     default:
       std::cerr << "Error! GaussianFilter::blocking_transport: address 0x"
                 << std::setfill('0') << std::setw(8) << std::hex << addr
