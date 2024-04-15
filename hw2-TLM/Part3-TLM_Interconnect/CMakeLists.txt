@@ -23,7 +23,7 @@ target_link_libraries(gaussian systemc)
 # Add test gaussian filter command
 set(OUT_FILE "out.bmp")
 add_custom_command(OUTPUT ${OUT_FILE}
-	COMMAND ./gaussian ${CMAKE_SOURCE_DIR}/lena_std_short.bmp ./${OUT_FILE}
+	COMMAND ./gaussian ${CMAKE_SOURCE_DIR}/img/lena_color_256_noise.bmp ./${OUT_FILE}
 	DEPENDS gaussian
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}	
 )

@@ -13,23 +13,39 @@ GaussianFilter::GaussianFilter(sc_module_name n)
 GaussianFilter::~GaussianFilter() = default;
 
 void GaussianFilter::do_filter() {
+  unsigned char buffer[5][5];
+
   while (true) {
-    for (unsigned int i = 0; i < MASK_N; ++i) {
-      val[i] = 0;
-    }
-    for (unsigned int v = 0; v < MASK_Y; ++v) {
-      for (unsigned int u = 0; u < MASK_X; ++u) {
-        unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
-        for (unsigned int i = 0; i != MASK_N; ++i) {
-          val[i] += grey * mask[i][u][v];
+
+    val = 0;
+
+    int is_row_start = i_row_start.read();
+    if(is_row_start) {
+      for (unsigned int v = 0; v < MASK_Y; ++v) {
+        for (unsigned int u = 0; u < MASK_X; ++u) {
+          unsigned char grey = round((i_r.read() * 0.299 + i_g.read() * 0.587 + i_b.read() * 0.114));
+          buffer[v][u] = grey;
+          val += (double)grey * mask[v][u];
         }
       }
     }
-    double total = 0;
-    for (unsigned int i = 0; i != MASK_N; ++i) {
-      total += val[i] * val[i];
+    else {
+      for (unsigned int v = 0; v < MASK_Y; ++v) {
+        for (unsigned int u = 0; u < MASK_X; ++u) {
+          if(u != (MASK_X - 1)) {
+            buffer[v][u] = buffer[v][u + 1]; // emulate shift register
+            val += (double)buffer[v][u] * mask[v][u];
+          }
+          else {
+            unsigned char grey = round((i_r.read() * 0.299 + i_g.read() * 0.587 + i_b.read() * 0.114));
+            buffer[v][u] = grey;
+            val += (double)grey * mask[v][u];
+          }
+        }
+      }
     }
-    int result = static_cast<int>(std::sqrt(total));
+
+    int result = round(val/(double)273);
     o_result.write(result);
   }
 }
@@ -59,6 +75,7 @@ void GaussianFilter::blocking_transport(tlm::tlm_generic_payload &payload,
     data_ptr[1] = buffer.uc[1];
     data_ptr[2] = buffer.uc[2];
     data_ptr[3] = buffer.uc[3];
+    delay = sc_time(10, SC_NS);
     break;
   case tlm::TLM_WRITE_COMMAND:
     switch (addr) {
@@ -72,6 +89,10 @@ void GaussianFilter::blocking_transport(tlm::tlm_generic_payload &payload,
       if (mask_ptr[2] == 0xff) {
         i_b.write(data_ptr[2]);
       }
+      if (mask_ptr[3] == 0xff) {
+        i_row_start.write(data_ptr[3]);
+      }
+      delay = sc_time(5, SC_NS);
       break;
     default:
       std::cerr << "Error! GaussianFilter::blocking_transport: address 0x"

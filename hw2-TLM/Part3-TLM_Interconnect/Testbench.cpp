@@ -136,8 +136,48 @@ void Testbench::do_gaussian() {
       xBound = MASK_X / 2;            // 1
       yBound = MASK_Y / 2;            // 1
 
-      for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
-        for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
+      if(x == 0) {
+        for (v = -yBound; v != yBound + adjustY; ++v) {
+          for (u = -xBound; u != xBound + adjustX; ++u) {
+
+            if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
+              R = *(source_bitmap +
+                    bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
+              G = *(source_bitmap +
+                    bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
+              B = *(source_bitmap +
+                    bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
+            } else {
+              R = 0;
+              G = 0;
+              B = 0;
+            }
+
+            data.uc[0] = R;
+            data.uc[1] = G;
+            data.uc[2] = B;
+            mask[0] = 0xff;
+            mask[1] = 0xff;
+            mask[2] = 0xff;
+
+            if((v == -yBound) && (u == -xBound)) { // to notify this is the first element of the row
+              data.uc[3] = 1;
+              mask[3] = 0xff;
+            }
+            else {
+              mask[3] = 0;
+            }
+
+            initiator.write_to_socket(GAUSSIAN_MM_BASE + GAUSSIAN_FILTER_R_ADDR, mask,
+                                    data.uc, 4);
+            wait(1 * CLOCK_PERIOD, SC_NS);
+          }
+        }
+      }
+      else {
+        u = xBound + adjustX - 1;
+        for (v = -yBound; v != yBound + adjustY; ++v) {
+
           if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
             R = *(source_bitmap +
                   bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
@@ -150,13 +190,22 @@ void Testbench::do_gaussian() {
             G = 0;
             B = 0;
           }
+
           data.uc[0] = R;
           data.uc[1] = G;
           data.uc[2] = B;
           mask[0] = 0xff;
           mask[1] = 0xff;
           mask[2] = 0xff;
-          mask[3] = 0;
+
+          if(v == -yBound) { // to notify this is not the first element of current row
+            data.uc[3] = 0;
+            mask[3] = 0xff;
+          }
+          else {
+            mask[3] = 0;
+          }
+
           initiator.write_to_socket(GAUSSIAN_MM_BASE + GAUSSIAN_FILTER_R_ADDR, mask,
                                     data.uc, 4);
           wait(1 * CLOCK_PERIOD, SC_NS);
@@ -177,17 +226,9 @@ void Testbench::do_gaussian() {
       //debug
       //cout << "Now at " << sc_time_stamp() << endl; //print current sc_time
 
-      if (total - THRESHOLD >= 0) {
-        // black
-        *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = BLACK;
-        *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = BLACK;
-        *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = BLACK;
-      } else {
-        // white
-        *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = WHITE;
-        *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = WHITE;
-        *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = WHITE;
-      }
+      *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
+      *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
+      *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = total;
     }
   }
   sc_stop();

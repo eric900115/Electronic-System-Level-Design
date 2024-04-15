@@ -15,6 +15,7 @@ public:
   sc_fifo<unsigned char> i_r;
   sc_fifo<unsigned char> i_g;
   sc_fifo<unsigned char> i_b;
+  sc_fifo<int> i_row_start;
   sc_fifo<int> o_result;
 
   SC_HAS_PROCESS(GaussianFilter);
@@ -23,7 +24,7 @@ public:
 
 private:
   void do_filter();
-  int val[MASK_N];
+  int val;
 
   unsigned int base_offset;
   void blocking_transport(tlm::tlm_generic_payload &payload,
