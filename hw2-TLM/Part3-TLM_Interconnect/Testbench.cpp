@@ -27,6 +27,11 @@ unsigned char header[54] = {
 
 Testbench::Testbench(sc_module_name n)
     : sc_module(n), initiator("initiator"), output_rgb_raw_data_offset(54) {
+
+  // Set the global quantum
+  m_qk.set_global_quantum( sc_time(5, SC_NS) );
+  m_qk.reset();
+
   SC_THREAD(do_gaussian);
 }
 
@@ -170,7 +175,9 @@ void Testbench::do_gaussian() {
 
             initiator.write_to_socket(GAUSSIAN_MM_BASE + GAUSSIAN_FILTER_R_ADDR, mask,
                                     data.uc, 4);
-            wait(1 * CLOCK_PERIOD, SC_NS);
+            //wait(1 * CLOCK_PERIOD, SC_NS);
+            m_qk.inc( sc_time(CLOCK_PERIOD * 1, SC_NS) );
+            if (m_qk.need_sync()) m_qk.sync();
           }
         }
       }
@@ -208,7 +215,10 @@ void Testbench::do_gaussian() {
 
           initiator.write_to_socket(GAUSSIAN_MM_BASE + GAUSSIAN_FILTER_R_ADDR, mask,
                                     data.uc, 4);
-          wait(1 * CLOCK_PERIOD, SC_NS);
+          
+          //wait(1 * CLOCK_PERIOD, SC_NS);
+          m_qk.inc( sc_time(CLOCK_PERIOD * 1, SC_NS) );
+          if (m_qk.need_sync()) m_qk.sync();
         }
       }
       bool done=false;
@@ -218,7 +228,10 @@ void Testbench::do_gaussian() {
         output_num = data.sint;
         if(output_num>0) done=true;
       }
-      wait(10 * CLOCK_PERIOD, SC_NS);
+
+      //wait(10 * CLOCK_PERIOD, SC_NS);
+      m_qk.inc( sc_time(CLOCK_PERIOD * 10, SC_NS) );
+      if (m_qk.need_sync()) m_qk.sync();
 
       initiator.read_from_socket(GAUSSIAN_MM_BASE + GAUSSIAN_FILTER_RESULT_ADDR, mask,
                                  data.uc, 4);
