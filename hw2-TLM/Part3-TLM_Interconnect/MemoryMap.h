@@ -3,11 +3,11 @@
 #include <systemc>
 using Addr = sc_dt::uint64;
 
-// Sobel filter Memory Map
-// Used between SimpleBus & SobelFilter
-const int SOBEL_MM_BASE = 0x90000000;
-const int SOBEL_MM_SIZE = 0x0000000C;
-const int SOBEL_MM_MASK = 0x0000000F;
+// Gaussian filter Memory Map
+// Used between SimpleBus & GaussianFilter
+const int GAUSSIAN_MM_BASE = 0x90000000;
+const int GAUSSIAN_MM_SIZE = 0x0000000C;
+const int GAUSSIAN_MM_MASK = 0x0000000F;
 
 class icmPortMapping {
 private:

@@ -1,5 +1,5 @@
-#ifndef SOBEL_FILTER_H_
-#define SOBEL_FILTER_H_
+#ifndef GAUSSIAN_FILTER_H_
+#define GAUSSIAN_FILTER_H_
 #include <systemc>
 using namespace sc_core;
 
@@ -8,18 +8,18 @@ using namespace sc_core;
 
 #include "filter_def.h"
 
-class SobelFilter : public sc_module {
+class GaussianFilter : public sc_module {
 public:
-  tlm_utils::simple_target_socket<SobelFilter> t_skt;
+  tlm_utils::simple_target_socket<GaussianFilter> t_skt;
 
   sc_fifo<unsigned char> i_r;
   sc_fifo<unsigned char> i_g;
   sc_fifo<unsigned char> i_b;
   sc_fifo<int> o_result;
 
-  SC_HAS_PROCESS(SobelFilter);
-  SobelFilter(sc_module_name n);
-  ~SobelFilter();
+  SC_HAS_PROCESS(GaussianFilter);
+  GaussianFilter(sc_module_name n);
+  ~GaussianFilter();
 
 private:
   void do_filter();

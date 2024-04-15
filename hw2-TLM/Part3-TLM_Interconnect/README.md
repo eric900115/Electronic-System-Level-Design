@@ -1,3 +1,3 @@
-# sobel_tlm_bus
+# gaussian_tlm_bus
 
-Sobel filter module connected with a TLM bus
+Gaussian filter module connected with a TLM bus
