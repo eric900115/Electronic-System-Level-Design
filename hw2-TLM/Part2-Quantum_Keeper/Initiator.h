@@ -4,6 +4,7 @@
 using namespace sc_core;
 
 #include "tlm"
+#include "tlm_utils/tlm_quantumkeeper.h"
 #include "tlm_utils/simple_initiator_socket.h"
 
 class Initiator : public sc_module {
@@ -21,5 +22,8 @@ public:
 
   void do_trans(tlm::tlm_generic_payload &trans);
   tlm::tlm_generic_payload trans;
+
+private:
+  tlm_utils::tlm_quantumkeeper m_qk; // Quantum keeper for temporal decoupling
 };
 #endif

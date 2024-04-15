@@ -10,6 +10,8 @@ using namespace sc_core;
 #include "Initiator.h"
 #include "filter_def.h"
 
+#include "tlm_utils/tlm_quantumkeeper.h"
+
 const int WHITE = 255;
 const int BLACK = 0;
 const int THRESHOLD = 90;
@@ -47,6 +49,8 @@ private:
   unsigned short bytes_per_pixel;
   unsigned char *source_bitmap;
   unsigned char *target_bitmap;
+
+  tlm_utils::tlm_quantumkeeper m_qk; // Quantum keeper for temporal decoupling
 
   void do_gaussian();
 };
