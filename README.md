@@ -5,5 +5,7 @@ NTHU Electronic System Level Design and Synthesis
 
 **HW2 SystemC**
 > Implement Gaussian Blur Filter with TLM interface.
+
 > Implement Gaussian Blur Filter with Quantum Keeper.
+
 > Implement Gaussian Blur Filter with TLM interconnect.
