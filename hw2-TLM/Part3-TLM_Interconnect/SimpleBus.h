@@ -23,6 +23,9 @@ public:
   target_socket_type t_skt[NR_OF_TARGET_SOCKETS];
   initiator_socket_type i_skt[NR_OF_INITIATOR_SOCKETS];
 
+  int read_transaction_num;
+  int write_transaction_num;
+
 public:
   SC_HAS_PROCESS(SimpleBus);
   SimpleBus(sc_core::sc_module_name name, double clock_period_in_ps = 1000,
@@ -39,6 +42,8 @@ public:
       i_skt[i].register_invalidate_direct_mem_ptr(
           this, &SimpleBus::invalidateDMIPointers, i);
     }
+    read_transaction_num = 0;
+    write_transaction_num = 0;
   }
 
   void set_clock_period(sc_core::sc_time t) { clock_period = t; }
@@ -73,6 +78,19 @@ public:
       trans.set_address(offset);
     }
     t = t + delay(trans); //add interconnect delay
+
+    // Calculate Number of transport during bus forward
+    switch (trans.get_command()) {
+      case tlm::TLM_READ_COMMAND:
+        read_transaction_num++;
+        break;
+      case tlm::TLM_WRITE_COMMAND:
+        write_transaction_num++;
+        break;
+      case tlm::TLM_IGNORE_COMMAND:
+        break;
+    }
+
     (*decodeSocket)->b_transport(trans, t);
   }
 
