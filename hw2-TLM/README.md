@@ -28,7 +28,7 @@ $ make run
 
 The initiator was declared in the constructor of `Testbench.cpp` and `Testbench.h`.
 
-```C=
+```C
 class Testbench : public sc_module {
 public:
   Initiator initiator;
@@ -36,7 +36,7 @@ public:
  }
 ```
 
-```C=
+```C
 Testbench::Testbench(sc_module_name n)
     : sc_module(n), initiator("initiator"), output_rgb_raw_data_offset(54) {
   SC_THREAD(do_gaussian);
@@ -44,7 +44,7 @@ Testbench::Testbench(sc_module_name n)
 ```
 In the `do_gaussian` function of `Testbench.cpp`, transactions are written through the initiator socket in Initiator module to send the pixels to be processed by Gaussian filter.
 
-```C=
+```C
 void Testbench::do_gaussian() {
 
 //...
@@ -98,7 +98,7 @@ void Testbench::do_gaussian() {
       }
 ```
 After the target module computes the Guassian filter, the initiator reads transactions to get the results.
-```c=
+```c
 void Testbench::do_gaussian() {
 
 //...
@@ -120,7 +120,7 @@ void Testbench::do_gaussian() {
 
 In the `blocking_transport` function of target module (GaussianFilter.cpp), if the payload recived from initiator is in write mode (TLM_WRITE_COMMAND), the target function writes data recieved from initiator to the FIFO, and `GaussianFilter::do_filter()` function will calculate the result of convolution.
 
-```c=
+```c
 GaussianFilter::blocking_transport(tlm::tlm_generic_payload &payload,
                                      sc_core::sc_time &delay) {
   //...
@@ -147,7 +147,7 @@ GaussianFilter::blocking_transport(tlm::tlm_generic_payload &payload,
 ```
 
 In the `blocking_transport` function of target module (GaussianFilter.cpp), if the payload recived from initiator is in read mode (TLM_READ_COMMAND), the target function reads data from the output of `GaussianFilter::do_filter()` function through FIFO and the initiator will read the computation results.
-```c=
+```c
 void GaussianFilter::blocking_transport(tlm::tlm_generic_payload &payload,
                                      sc_core::sc_time &delay) {
   //...
@@ -206,7 +206,7 @@ For this version, the wait() in the implementation will be replaced using quantu
 Here, I'll domenstrate the code implemented in `Initiator` using time quantum.
 
 The quantum keeper is setup in the constructor of Initiator module.
-```c=
+```c
 Initiator::Initiator(sc_module_name n) : sc_module(n), i_skt("i_skt") {
   // Set the global quantum
   m_qk.set_global_quantum( sc_time(10, SC_NS) );
@@ -214,7 +214,7 @@ Initiator::Initiator(sc_module_name n) : sc_module(n), i_skt("i_skt") {
 }
 ```
 In the function in `Initiator::do_trans`, we replaced the `wait()` with the quantum keeper using `m_qk.inc(delay)` to add delay to quantum keeper and using `m_qk.sync()` to update systemC kernel counter.
-```c=
+```c
 void Initiator::do_trans(tlm::tlm_generic_payload &trans) {
   
   //...
@@ -229,6 +229,21 @@ void Initiator::do_trans(tlm::tlm_generic_payload &trans) {
 ```
 
 In `testbench.cpp`, same technique is used to replace wait() with quantum keeper to reduce simulation time.
+
+### Experiment
+In this expeiment, I compare the execution time of Part1 (TLM Interface without Quatum Kepper) and Part2 (TLM Interface with Quatum Kepper). I use a 256x256 pixel image as benchmark and run Part1 and Part2 four times to observer the speedup in simulation speed using Quantum Keeper. The following table domenstrates the execution time (in microseconds) of Part1 and Part2.
+
+| TLM Interface without Quatum Kepper| TLM Interface with Quatum Kepper | 
+| -------- | -------- |
+| 435163     | 454179     |
+| 597666     | 393929     |
+| 475301     | 387853     |
+| 489807     | 307567     |
+
+And, the following table shows the average running time (in microseconds) of Part1 and Part2.
+| TLM Interface without Quatum Kepper| TLM Interface with Quatum Kepper | 
+| -------- | -------- |
+| 499484     | 385882     |
 
 ## Gaussian Blur Filter with TLM interconnect
 
@@ -250,7 +265,7 @@ $ make run
 ### Implementaion
 Here, I'll domenstrate the code section of connection between Testbench (inititator) and GuassianFilter (target) module using bus.
 
-```c=
+```c
 int main(){
   //...
   Testbench tb("tb");
@@ -263,3 +278,27 @@ int main(){
   //...
 }
 ```
+
+# Experiment
+In this experiment, I'll domonstrate the number of read and write operation observed in the transaction functions of TLM bus. For conducting this experiment, the following code section is added in `SimpleBus.h`.
+```c
+void initiatorBTransport(int SocketId, transaction_type &trans,
+                           sc_core::sc_time &t) {
+    //...
+    // Calculate Number of transport during bus forward
+    switch (trans.get_command()) {
+      case tlm::TLM_READ_COMMAND:
+        read_transaction_num++;
+        break;
+      case tlm::TLM_WRITE_COMMAND:
+        write_transaction_num++;
+        break;
+      case tlm::TLM_IGNORE_COMMAND:
+        break;
+    }
+    //...
+}
+```
+
+The following figure shows the number of read and write operations.
+![image](https://github.com/eric900115/Electronic-System-Level-Design/blob/main/hw2-TLM/img/output_part3.png?raw=true)
