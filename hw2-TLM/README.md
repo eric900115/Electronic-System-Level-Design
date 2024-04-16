@@ -279,7 +279,7 @@ int main(){
 }
 ```
 
-# Experiment
+### Experiment
 In this experiment, I'll domonstrate the number of read and write operation observed in the transaction functions of TLM bus. For conducting this experiment, the following code section is added in `SimpleBus.h`.
 ```c
 void initiatorBTransport(int SocketId, transaction_type &trans,
