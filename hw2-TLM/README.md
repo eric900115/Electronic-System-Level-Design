@@ -229,3 +229,37 @@ void Initiator::do_trans(tlm::tlm_generic_payload &trans) {
 ```
 
 In `testbench.cpp`, same technique is used to replace wait() with quantum keeper to reduce simulation time.
+
+## Gaussian Blur Filter with TLM interconnect
+
+### Compile and Execute
+```shell
+$ cd Part3-TLM_Interconnect
+$ mkdir build && cd build
+$ cmake ..
+$ make run
+```
+
+### Problem Formulation
+- Connect the quantum keeper modules of Gaussian Filter through a TLM bus.
+- Insert counters in the transaction functions of TLM bus to count the number of read/write to the target module.
+
+### Block Diagram
+![image](https://github.com/eric900115/Electronic-System-Level-Design/blob/main/hw2-TLM/img/BlockDiagram_Part3.png?raw=true)
+
+### Implementaion
+Here, I'll domenstrate the code section of connection between Testbench (inititator) and GuassianFilter (target) module using bus.
+
+```c=
+int main(){
+  //...
+  Testbench tb("tb");
+  SimpleBus<1, 1> bus("bus");
+  bus.set_clock_period(sc_time(CLOCK_PERIOD, SC_NS));
+  GaussianFilter gaussian_filter("gaussian_filter");
+  tb.initiator.i_skt(bus.t_skt[0]);
+  bus.setDecode(0, GAUSSIAN_MM_BASE, GAUSSIAN_MM_BASE + GAUSSIAN_MM_SIZE - 1);
+  bus.i_skt[0](gaussian_filter.t_skt);
+  //...
+}
+```
