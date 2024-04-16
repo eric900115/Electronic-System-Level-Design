@@ -213,7 +213,7 @@ Initiator::Initiator(sc_module_name n) : sc_module(n), i_skt("i_skt") {
   m_qk.reset();
 }
 ```
-In the function in `Initiator::do_trans` on line 7, we replaced the `wait()` with the quantum keeper on lines 8 and 9.
+In the function in `Initiator::do_trans`, we replaced the `wait()` with the quantum keeper using `m_qk.inc(delay)` to add delay to quantum keeper and using `m_qk.sync()` to update systemC kernel counter.
 ```c=
 void Initiator::do_trans(tlm::tlm_generic_payload &trans) {
   
