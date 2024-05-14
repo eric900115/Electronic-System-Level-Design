@@ -9,3 +9,8 @@ NTHU Electronic System Level Design and Synthesis
 > Implement Gaussian Blur Filter with Quantum Keeper.
 
 > Implement Gaussian Blur Filter with TLM interconnect.
+
+**HW3 High-Level Synthesis**
+> Design a HLS synthesizable version of the Gaussian Blur Filter module.
+
+> Use Cadence Stratus directive to optimize the design.
