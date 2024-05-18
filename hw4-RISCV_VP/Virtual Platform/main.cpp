@@ -18,6 +18,7 @@
 #include "sensor2.h"
 #include "syscall.h"
 #include "uart.h"
+#include "GaussianFilter.h" //Add
 #include "util/options.h"
 #include "platform/common/options.h"
 #include "platform/common/terminal.h"
@@ -71,6 +72,10 @@ public:
 	addr_t flash_end_addr = flash_start_addr + Flashcontroller::ADDR_SPACE;  // Usually 528 Byte
 	addr_t display_start_addr = 0x72000000;
 	addr_t display_end_addr = display_start_addr + Display::addressRange;
+	//Add
+	addr_t gaussianFilter_start_addr = 0x73000000;
+ 	addr_t gaussianFilter_size = 0x01000000;
+ 	addr_t gaussianFilter_end_addr = gaussianFilter_start_addr + gaussianFilter_size - 1;
 
 	bool quiet = false;
 	bool use_E_base_isa = false;
@@ -126,7 +131,8 @@ int sc_main(int argc, char **argv) {
 	SimpleTerminal term("SimpleTerminal");
 	UART uart("Generic_UART", 6);
 	ELFLoader loader(opt.input_program.c_str());
-	SimpleBus<3, 13> bus("SimpleBus");
+	//Add one target socket to bus (13-->14)
+	SimpleBus<3, 14> bus("SimpleBus");
 	CombinedMemoryInterface iss_mem_if("MemoryInterface", core);
 	SyscallHandler sys("SyscallHandler");
 	FE310_PLIC<1, 64, 96, 32> plic("PLIC");
@@ -140,6 +146,8 @@ int sc_main(int argc, char **argv) {
 	EthernetDevice ethernet("EthernetDevice", 7, mem.data, opt.network_device);
 	Display display("Display");
 	DebugMemoryInterface dbg_if("DebugMemoryInterface");
+	//Add
+	GaussianFilter gaussian_filter("gaussian_filter");
 
 	MemoryDMI dmi = MemoryDMI::create_start_size_mapping(mem.data, opt.mem_start_addr, mem.size);
 	InstrMemoryProxy instr_mem(dmi, core);
@@ -195,6 +203,9 @@ int sc_main(int argc, char **argv) {
 		bus.ports[it++] = new PortMapping(opt.ethernet_start_addr, opt.ethernet_end_addr);
 		bus.ports[it++] = new PortMapping(opt.display_start_addr, opt.display_end_addr);
 		bus.ports[it++] = new PortMapping(opt.sys_start_addr, opt.sys_end_addr);
+		//Add
+		bus.ports[it++] = new PortMapping(opt.gaussianFilter_start_addr, opt.gaussianFilter_end_addr);
+
 	}
 
 	// connect TLM sockets
@@ -221,6 +232,8 @@ int sc_main(int argc, char **argv) {
 		bus.isocks[it++].bind(ethernet.tsock);
 		bus.isocks[it++].bind(display.tsock);
 		bus.isocks[it++].bind(sys.tsock);
+		//Add
+		bus.isocks[it++].bind(gaussian_filter.tsock);
 	}
 
 	// connect interrupt signals/communication
