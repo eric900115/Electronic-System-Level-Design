@@ -2,7 +2,7 @@ all : main.cpp
 	riscv-none-elf-g++ -std=c++14 main.cpp -o main -march=rv32ima -mabi=ilp32
 	
 sim: all
-	/home/user/ee6470/riscv-vp/vp/build/bin/riscv-vp-acc --intercept-syscalls main
+	/home/user/ee6470/riscv-vp/vp/build/bin/riscv-vp-gaussian-acc --intercept-syscalls main
 	
 clean:
 	rm -f main

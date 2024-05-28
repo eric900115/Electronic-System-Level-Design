@@ -16,7 +16,6 @@ struct GaussianFilter : public sc_module {
   sc_fifo<unsigned char> i_r;
   sc_fifo<unsigned char> i_g;
   sc_fifo<unsigned char> i_b;
-  sc_fifo<int> i_row_start;
   sc_fifo<int> o_result;
 
   SC_HAS_PROCESS(GaussianFilter);
@@ -37,43 +36,22 @@ struct GaussianFilter : public sc_module {
   unsigned int base_offset;
 
   void do_filter(){
-    
-    unsigned char buffer[5][5];
-
+    { wait(CLOCK_PERIOD, SC_NS); }
     while (true) {
-
       val = 0;
-
-      bool row_start = i_row_start.read();
-      if(row_start) {
-        for (unsigned int v = 0; v < MASK_Y; ++v) {
-          for (unsigned int u = 0; u < MASK_X; ++u) {
-            unsigned char grey = round((i_r.read() * 0.299 + i_g.read() * 0.587 + i_b.read() * 0.114));
-            buffer[v][u] = grey;
-            val += (double)grey * mask[v][u];
-          }
+      for (unsigned int v = 0; v < MASK_X; ++v) {
+        for (unsigned int u = 0; u < MASK_Y; ++u) {
+          unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
+          val += grey * mask[u][v];
         }
       }
-      else {
-        for (unsigned int v = 0; v < MASK_Y; ++v) {
-          for (unsigned int u = 0; u < MASK_X; ++u) {
-            if(u != (MASK_X - 1)) {
-              buffer[v][u] = buffer[v][u + 1]; // emulate shift register
-              val += (double)buffer[v][u] * mask[v][u];
-            }
-            else {
-              unsigned char grey = round((i_r.read() * 0.299 + i_g.read() * 0.587 + i_b.read() * 0.114));
-              buffer[v][u] = grey;
-              val += (double)grey * mask[v][u];
-            }
-          }
-        }
-      }
+      double total = val / 273.;
+      wait(431, SC_NS);
+      int result = static_cast<int>(total);
 
-      int result = round(val/(double)273);
+      // cout << (int)result << endl;
+
       o_result.write(result);
-
-      wait(10); //emulate module delay
     }
   }
 
@@ -117,7 +95,6 @@ struct GaussianFilter : public sc_module {
             i_r.write(data_ptr[0]);
             i_g.write(data_ptr[1]);
             i_b.write(data_ptr[2]);
-            i_row_start.write(data_ptr[3]);
             break;
           default:
             std::cerr << "WRITE Error! GaussianFilter::blocking_transport: address 0x"

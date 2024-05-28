@@ -8,12 +8,11 @@
 #define THRESHOLD 90
 
 // gaussian mask parameters
-const int MASK_N = 1;
 const int MASK_X = 5;
 const int MASK_Y = 5;
 const int DMA_TRANS = 64;
 
-// Gaussian Filter inner transport addresses
+// gaussian Filter inner transport addresses
 // Used between blocking_transport() & do_filter()
 const int GAUSSIAN_FILTER_R_ADDR = 0x00000000;
 const int GAUSSIAN_FILTER_RESULT_ADDR = 0x00000004;
@@ -37,7 +36,6 @@ const double mask[MASK_X][MASK_Y] = {
   {4, 16, 26, 16, 4},
   {7, 26, 41, 26, 7},
   {4, 16, 26, 16, 4},
-  {1, 4, 7, 4, 1} 
+  {1, 4, 7, 4, 1}
 };
-
 #endif

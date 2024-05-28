@@ -44,9 +44,9 @@ const int WHITE = 255;
 const int BLACK = 0;
 const int THRESHOLD = 90;
 
-// gaussian Filter ACC
-static char* const GAUSSIANFILTER_START_ADDR = reinterpret_cast<char* const>(0x73000000);
-static char* const GAUSSIANFILTER_READ_ADDR  = reinterpret_cast<char* const>(0x73000004);
+// Sobel Filter ACC
+static char* const SOBELFILTER_START_ADDR = reinterpret_cast<char* const>(0x73000000);
+static char* const SOBELFILTER_READ_ADDR  = reinterpret_cast<char* const>(0x73000004);
 
 // DMA 
 static volatile uint32_t * const DMA_SRC_ADDR  = (uint32_t * const)0x70000000;
@@ -56,7 +56,7 @@ static volatile uint32_t * const DMA_OP_ADDR   = (uint32_t * const)0x7000000C;
 static volatile uint32_t * const DMA_STAT_ADDR = (uint32_t * const)0x70000010;
 static const uint32_t DMA_OP_MEMCPY = 1;
 
-bool _is_using_dma = false;
+bool _is_using_dma = true;
 int read_bmp(std::string infile_name) {
   FILE *fp_s = NULL; // source file handler
   fp_s = fopen(infile_name.c_str(), "rb");
@@ -187,34 +187,11 @@ int main(int argc, char *argv[]) {
   int total;
   printf("Start processing...(%d, %d)\n", width, height);
   for(int i = 0; i < width; i++){
+    //printf("%d ", i);
     for(int j = 0; j < height; j++){
       //printf("pixel (%d, %d); \n", i, j);
-      if(j == 0) {
-        for(int v = -2; v <= 2; v ++){
-          for(int u = -2; u <= 2; u++){
-            if((v + i) >= 0  &&  (v + i ) < width && (u + j) >= 0 && (u + j) < height ){
-              buffer[0] = *(source_bitmap + bytes_per_pixel * ((j + u) * width + (i + v)) + 2);
-              buffer[1] = *(source_bitmap + bytes_per_pixel * ((j + u) * width + (i + v)) + 1);
-              buffer[2] = *(source_bitmap + bytes_per_pixel * ((j + u) * width + (i + v)) + 0);
-            }else{
-              buffer[0] = 0;
-              buffer[1] = 0;
-              buffer[2] = 0;
-            }
-
-            if((v == -2) && (u == -2)) {
-              buffer[3] = 1;
-            }
-            else {
-              buffer[3] = 0;
-            }
-            write_data_to_ACC(GAUSSIANFILTER_START_ADDR, buffer, 4);
-          }
-        }
-      }
-      else {
-        int u = 2;
-        for(int v = -2; v <= 2; v++){
+      for(int v = -2; v <= 2; v ++){
+        for(int u = -2; u <= 2; u++){
           if((v + i) >= 0  &&  (v + i ) < width && (u + j) >= 0 && (u + j) < height ){
             buffer[0] = *(source_bitmap + bytes_per_pixel * ((j + u) * width + (i + v)) + 2);
             buffer[1] = *(source_bitmap + bytes_per_pixel * ((j + u) * width + (i + v)) + 1);
@@ -226,11 +203,10 @@ int main(int argc, char *argv[]) {
             buffer[2] = 0;
             buffer[3] = 0;
           }
-          write_data_to_ACC(GAUSSIANFILTER_START_ADDR, buffer, 4);
+          write_data_to_ACC(SOBELFILTER_START_ADDR, buffer, 4);
         }
       }
-
-      read_data_from_ACC(GAUSSIANFILTER_READ_ADDR, buffer, 4);
+      read_data_from_ACC(SOBELFILTER_READ_ADDR, buffer, 4);
 
       memcpy(data.uc, buffer, 4);
       total = (data).sint;
