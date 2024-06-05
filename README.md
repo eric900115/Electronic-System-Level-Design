@@ -14,3 +14,6 @@ NTHU Electronic System Level Design and Synthesis
 > Design a HLS synthesizable version of the Gaussian Blur Filter module.
 
 > Use Cadence Stratus directive to optimize the design.
+
+**HW4 RISC-V Virtual Platform**
+> Port the Gaussian Blur Filter module to the RISC-V Virtual Platform.
